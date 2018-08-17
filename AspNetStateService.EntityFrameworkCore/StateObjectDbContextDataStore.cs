@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AspNetStateService.Core;
 
 using Cogito.Autofac;
+using Microsoft.EntityFrameworkCore;
 
 namespace AspNetStateService.EntityFrameworkCore
 {
@@ -30,8 +31,8 @@ namespace AspNetStateService.EntityFrameworkCore
         {
             using (var db = await dbContextProvider.CreateDbContextAsync())
             {
-                var o = await db.FindAsync<StateObjectData>(id);
-                return (o?.Data, o?.ExtraFlags, o?.Timeout, o?.Touched);
+                var o = await db.State.Include(i => i.Data).FirstOrDefaultAsync(i => i.Id == id);
+                return (o?.Data?.Value, o?.ExtraFlags, o?.Timeout, o?.Touched);
             }
         }
 
@@ -39,7 +40,7 @@ namespace AspNetStateService.EntityFrameworkCore
         {
             using (var db = await dbContextProvider.CreateDbContextAsync())
             {
-                var o = await db.FindAsync<StateObjectData>(id);
+                var o = await db.FindAsync<State>(id);
                 return (o?.LockCookie, o?.LockTime);
             }
         }
@@ -48,7 +49,7 @@ namespace AspNetStateService.EntityFrameworkCore
         {
             using (var db = await dbContextProvider.CreateDbContextAsync())
             {
-                var o = await db.FindAsync<StateObjectData>(id);
+                var o = await db.State.Include(i => i.Data).FirstOrDefaultAsync(i => i.Id == id);
                 if (o != null)
                 {
                     o.Data = null;
@@ -65,7 +66,7 @@ namespace AspNetStateService.EntityFrameworkCore
         {
             using (var db = await dbContextProvider.CreateDbContextAsync())
             {
-                var o = await db.FindAsync<StateObjectData>(id);
+                var o = await db.FindAsync<State>(id);
                 if (o != null)
                 {
                     o.LockCookie = null;
@@ -80,11 +81,14 @@ namespace AspNetStateService.EntityFrameworkCore
         {
             using (var db = await dbContextProvider.CreateDbContextAsync())
             {
-                var o = await db.FindAsync<StateObjectData>(id);
+                var o = await db.State.Include(i => i.Data).FirstOrDefaultAsync(i => i.Id == id);
                 if (o == null)
-                    db.StateObjects.Add(o = new StateObjectData() { Id = id } );
+                    db.State.Add(o = new State() { Id = id } );
 
-                o.Data = data;
+                if (o.Data == null)
+                    o.Data = new StateData() { Id = o.Id, State = o };
+
+                o.Data.Value = data;
                 o.ExtraFlags = extraFlags;
                 o.Timeout = timeout;
                 o.Touched = DateTime.Now;
@@ -97,9 +101,9 @@ namespace AspNetStateService.EntityFrameworkCore
         {
             using (var db = await dbContextProvider.CreateDbContextAsync())
             {
-                var o = await db.FindAsync<StateObjectData>(id);
+                var o = await db.FindAsync<State>(id);
                 if (o == null)
-                    db.StateObjects.Add(o = new StateObjectData() { Id = id });
+                    db.State.Add(o = new State() { Id = id });
 
                 o.ExtraFlags = extraFlags;
 
@@ -111,9 +115,9 @@ namespace AspNetStateService.EntityFrameworkCore
         {
             using (var db = await dbContextProvider.CreateDbContextAsync())
             {
-                var o = await db.FindAsync<StateObjectData>(id);
+                var o = await db.FindAsync<State>(id);
                 if (o == null)
-                    db.StateObjects.Add(o = new StateObjectData() { Id = id });
+                    db.State.Add(o = new State() { Id = id });
 
                 o.LockCookie = cookie;
                 o.LockTime = time;
@@ -126,9 +130,9 @@ namespace AspNetStateService.EntityFrameworkCore
         {
             using (var db = await dbContextProvider.CreateDbContextAsync())
             {
-                var o = await db.FindAsync<StateObjectData>(id);
+                var o = await db.FindAsync<State>(id);
                 if (o == null)
-                    db.StateObjects.Add(o = new StateObjectData() { Id = id });
+                    db.State.Add(o = new State() { Id = id });
 
                 o.Timeout = timeout;
 

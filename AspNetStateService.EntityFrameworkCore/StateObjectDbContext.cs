@@ -43,13 +43,19 @@ namespace AspNetStateService.EntityFrameworkCore
         /// <param name="modelBuilder"></param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<StateObjectData>();
+            modelBuilder.Entity<State>();
+            modelBuilder.Entity<StateData>();
         }
 
         /// <summary>
-        /// Gets the set of all available state objects data.
+        /// Gets the set of all available state objects.
         /// </summary>
-        public DbSet<StateObjectData> StateObjects { get; set; }
+        public DbSet<State> State { get; set; }
+
+        /// <summary>
+        /// Gets the set of all available state object data.
+        /// </summary>
+        public DbSet<StateData> Statedata { get; set; }
 
     }
 

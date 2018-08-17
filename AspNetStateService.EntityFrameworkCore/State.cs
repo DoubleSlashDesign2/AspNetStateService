@@ -8,7 +8,8 @@ namespace AspNetStateService.EntityFrameworkCore
     /// <summary>
     /// Data object of a state object.
     /// </summary>
-    public class StateObjectData
+    [Table("State")]
+    public class State
     {
 
         /// <summary>
@@ -22,8 +23,8 @@ namespace AspNetStateService.EntityFrameworkCore
         /// <summary>
         /// Persisted data.
         /// </summary>
-        [Column("Data")]
-        public virtual byte[] Data { get; set; }
+        [InverseProperty(nameof(StateData.State))]
+        public virtual StateData Data { get; set; }
 
         /// <summary>
         /// ExtraFlags set on the state object.
